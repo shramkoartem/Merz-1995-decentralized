@@ -40,7 +40,7 @@ exp(varrho) = (1/exp(C));
 
 // 2. Marginal Disutility from Work
 [G]
-exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
+exp(G)=exp(N)^(-1/nu_est);
 
 // 3. Consumption Euler equation
 [C]
