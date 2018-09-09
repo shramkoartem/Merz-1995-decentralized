@@ -3,7 +3,7 @@
 
 
 //endogenous variables
-var varrho r q G W C Y I S V M U Z K N P y_dev u_dev v_dev;
+var varrho r q G W C Y I S V M U Z K N P theta Pr y_dev u_dev v_dev;
 
 //predetermined variables
 predetermined_variables K N;
@@ -92,9 +92,9 @@ exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
 [N]
     exp(N(+1))=(1-psi)*exp(N)+exp(M);
 
-// 14. Avg. labor productivity
+// 14. Probability of finding job
 [P]
-    exp(P)=exp(Y-N);
+    exp(P)=exp(M)/(exp(S)*(1-exp(N));
 
 // 15. Job match probability
 [q]
@@ -103,6 +103,14 @@ exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
 // 16. Labor augmenting factor
 [Z]
     Z=rho*Z(-1)+e_Z;
+    
+// 17. Labor market tightness
+[theta]       
+    exp(theta)=exp(V-U);
+
+// 18. Avg.labor productivity 
+[Pr]
+    exp(Pr)=exp(Y-N);
 
        
 
