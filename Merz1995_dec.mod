@@ -1,9 +1,11 @@
 % The model of Merz (1995)
 % In log deviations
+% This .mod file sets cs and etas to fix search intensity
+
 
 
 //endogenous variables
-var varrho r q G W C Y I S V M U Z K N P theta Pr y_dev u_dev v_dev;
+var varrho r q P G W C Y I S V M U Z K N  theta Pr y_dev u_dev v_dev;
 
 //predetermined variables
 predetermined_variables K N;
@@ -40,7 +42,8 @@ exp(varrho) = (1/exp(C));
 
 // 2. Marginal Disutility from Work
 [G]
-exp(G)=exp(N)^(-1/nu_est);
+exp(G)=exp(N)^(1/nu_est);
+//exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
 
 // 3. Consumption Euler equation
 [C]
@@ -48,8 +51,8 @@ exp(G)=exp(N)^(-1/nu_est);
 
 // 4. Search intensity Euler equation
 [S]
-    exp(varrho)*cs=exp(P)*beta*(exp(varrho(+1))*(W(+1)+cs)-exp(G(+1))+(exp(varrho(+1))*cs/exp(P(+1)))*(1+psi-exp(P(+1))*S(+1)));
-	 
+//exp(varrho)*cs=exp(P)*beta*(exp(varrho(+1))*(W(+1)+cs)-exp(G(+1))+(exp(varrho(+1))*cs/exp(P(+1)))*(1+psi-exp(P(+1))*S(+1)));
+exp(varrho)*cs=exp(M)/(exp(S)*exp(U))*beta*(exp(varrho(+1))*(W(+1)+cs)-exp(G(+1))+(exp(varrho(+1))*cs/exp(M(+1))/(exp(S(+1))*exp(U(+1))))*(1+psi-exp(M(+1))/(exp(S(+1))*exp(U(+1)))*S(+1)));
 
 //------------- Firm --------------------------------------
 // 5. Production function
@@ -62,7 +65,8 @@ exp(G)=exp(N)^(-1/nu_est);
 
 // 7. Vacancy creation Euler equation [cv - vacancy posting costs]
 [V]
-    exp(varrho)*cv=exp(q)*beta*exp(varrho(+1))*((1-alpha)*exp(Y(+1))/exp(N(+1))-exp(W(+1))+(cv/exp(q(+1)))*(1-psi));
+    exp(varrho)*cv=(1-lambda)*exp(M)/exp(V)*beta*exp(varrho(+1))*((1-alpha)*exp(Y(+1))/exp(N(+1))-exp(W(+1))+(cv/(1-lambda)*exp(M(+1))/exp(V(+1)))*(1-psi));
+//exp(varrho)*cv=exp(q)*beta*exp(varrho(+1))*((1-alpha)*exp(Y(+1))/exp(N(+1))-exp(W(+1))+(cv/exp(q(+1)))*(1-psi));
 
 // 8. Wage
 [W]
@@ -94,7 +98,9 @@ exp(G)=exp(N)^(-1/nu_est);
 
 // 14. Probability of finding job
 [P]
-    exp(P)=exp(M)/(exp(S)*(1-exp(N));
+    //exp(P)=(exp(M)/(exp(S+U)));
+//exp(P)=exp(Y-N);
+exp(P)=exp(M)/(exp(S)*exp(U));
 
 // 15. Job match probability
 [q]
@@ -103,7 +109,7 @@ exp(G)=exp(N)^(-1/nu_est);
 // 16. Labor augmenting factor
 [Z]
     Z=rho*Z(-1)+e_Z;
-    
+
 // 17. Labor market tightness
 [theta]       
     exp(theta)=exp(V-U);
@@ -111,9 +117,6 @@ exp(G)=exp(N)^(-1/nu_est);
 // 18. Avg.labor productivity 
 [Pr]
     exp(Pr)=exp(Y-N);
-
-       
-
 
 //--------- Cental Planner - [commented out] --------------
 //MC of searching = MB from working
@@ -151,10 +154,12 @@ initval;
     V=-2.91164322016667; 
     M=-2.74529037907900;
     U=-2.49576111823558;
+    //P=0.8;
     Z=0;
     K=3.52231558659806;
     N=-0.0860303421462215;
-    P=1.29900453434794;
+    Pr=1.29900453434794;
+    P=-0.2496;
     y_dev=0;
     u_dev=0;
     v_dev=0;
