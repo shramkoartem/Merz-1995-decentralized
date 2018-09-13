@@ -2,46 +2,57 @@
 % In log deviations
 
  //endogenous variables
-var varrho r q G W C Y I S V M U Z K N P y_dev u_dev v_dev;
+var varrho r q G W C Y I S V M U Z K N P theta y_dev u_dev v_dev;
+
  //predetermined variables
 predetermined_variables K N;
+
  //exogenous variables
 varexo e_Z;
+
  //parameters
 parameters lambda alpha rho cs etas cv etav delta_prime psi beta sig_e nu_est;
+
  //initialize parameters
-lambda=0.4;
-alpha=0.36; 
-rho=0.95;
-cs=0.00000000001; 
-etas=1000000000;
-cv=0.05; 
-etav=1; 
-delta=0.022;
-mu=0.004;
+lambda=0.4;   % weight of search effort and unemployed in matching function
+alpha=0.36;   % weight of capital in production function
+rho=0.95;     % persistence of technology shock
+cs=0.005;    % search costs (c0)
+etas=10;      % eta in search cost function
+cv=0.05;      % vacancy posting costs
+etav=1;       % curvature of vacancy posting costs (=1 linear costs)
+delta=0.022;  % depreciation rate of capital
+mu=0.004;     % growth rate
 delta_prime=1-(1-delta)*(exp(-mu));
-psi=0.07; 
-beta= 1/(1.04^(1/4));
-nu_est=1.25;
-sig_e=0.007;
+psi=0.07;     % constant separation rate
+beta= 1/(1.04^(1/4));  % discount factor
+nu_est=-1.25;  % Frisch elasticity
+sig_e=0.007;  % standard devaition of shock
+
  //model equations
 model;
  //----------- Household -----------------------------------
+
 // 1. Marginal Untility from Consumption
 [varrho]
 exp(varrho) = (1/exp(C));
+
  // 2. Marginal Disutility from Work
 [G]
-exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
-//exp(G)=(exp(N)^(1-1/nu_est));
+//exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
+
+exp(G)=(exp(N)^(1/nu_est));
  // 3. Consumption Euler equation
 [C]
     exp(varrho)=beta*(exp(varrho(+1))*(exp(r(+1))+1-delta_prime));
+
  // 4. Search intensity Euler equation
 [S]
+    //exp(varrho)*cs=exp(P)*beta*(exp(varrho(+1))*(exp(W(+1))+cs)-exp(G(+1))+(cs*exp(varrho(+1)-P(+1)))*(1+psi-exp(P(+1)+S(+1))));
     exp(varrho)*cs=exp(P)*beta*(exp(varrho(+1))*(exp(W(+1))+cs)-exp(G(+1))+(exp(varrho(+1))*cs/exp(P(+1)))*(1+psi-exp(P(+1))*exp(S(+1))));
 	 
  //------------- Firm --------------------------------------
+
 // 5. Production function
 [Y]
     exp(Y)=exp(Z)*exp(K)^alpha*(exp(N))^(1-alpha);
@@ -71,12 +82,16 @@ exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
  // 13. Labor dynamics
 [N]
     exp(N(+1))=(1-psi)*exp(N)+exp(M);
- // 14. Avg. labor productivity
+
+ // 14. Probability to find job
 [P]
-    exp(P)=exp(Y-N);
+    //exp(P)=exp(theta)^(1-lambda);
+    
+    exp(P)=exp(M-S-U)/0.2;
+    
  // 15. Job match probability
 [q]
-    exp(q)=(1-lambda)*exp(M)/exp(V);
+    exp(q)=(1-lambda)*exp(M-V);
  // 16. Labor augmenting factor
 [Z]
     Z=rho*Z(-1)+e_Z;
@@ -87,9 +102,10 @@ exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
  //MC of searching = MC of posting vacancies
 //    (cs*etas*exp(S)^(etas)*exp(U)/((lambda)))=(cv*etav*exp(V)^(etav)/((1-lambda)));
  //Labor market tightness 
-//    exp(theta)=exp(V-U);
+    exp(theta)=exp(V-U);
  //Budget constraint
 //    exp(C)=exp(Y)-exp(I)-cs*exp(S)^etas*exp(U)-cv*exp(V)^etav;
+
  // 16. Output deviation from St.St.
 [y_dev]
     y_dev = Y-STEADY_STATE(Y) ;
@@ -102,7 +118,11 @@ exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
 end;
  //initial values for parameters
 initval;
-   
+
+    W=0.8513;
+    G=-0.0688;
+    varrho=-0.9097;
+    r=-3.3298;
     C=0.909695877517769;
     Y=1.21297419220172; 
     I=-0.131035097064121; 
@@ -113,18 +133,25 @@ initval;
     Z=0;
     K=3.52231558659806;
     N=-0.0860303421462215;
-    P=1.29900453434794;
+    //P=1.29900453434794;
+    P=-0.2495;
+    q=-0.3445;
+    theta=-0.415882101931087;
     y_dev=0;
     u_dev=0;
     v_dev=0;
 end;
+
  check;
+
  //calculate steady state
 steady;
+
  //variance of shocks
 shocks;
 var e_Z=sig_e^2;
 end;
+
  //observed model variables (names must coincide with data variables in datafile)
 //varobs y_dev u_dev v_dev; 
  //specify parameter to be estimated, including their priors
@@ -137,7 +164,11 @@ end;
 //stderr e_Z, 0.007, 0, 0.5,inv_gamma_pdf,0.01, 0.5;
 //rho,0.9534, 0.0001,.999, beta_pdf, 0.95, 0.005;
 //end;
+
  //estimate model
+
 //estimation(mode_compute=1,lik_init=2,order=1,plot_priors=1,datafile=data_dev,mh_replic=10000,mh_nblocks=2,mh_drop=0.2,mh_jscale=1,mode_check); 
+
  //stochastic simulation using the estimated parameters
+
 stoch_simul(irf=120,order=1,hp_filter=1600, periods=2100);
