@@ -1,8 +1,37 @@
-% The model of Merz (1995)
-% In log deviations
+/*
+ * This file replicates the model studied in:
+ * Merz (1995): "Search in labor market and the real business cycle", 
+ * Journal of Monetary Economics, 36 (1995), pp. 269-300.
+ * 
+ * It provides a replication of the decentralized version of the model from the paper  
+ *of the model from the paper
+ *
+ * This implementation was written by Artem Shramko. 
+ * Please note that the following copyright notice only applies to this Dynare 
+ * implementation of the model.
+ */
+
+/*
+ * Copyright (C) 2018 Artem Shramko
+ *
+ * This is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * It is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * For a copy of the GNU General Public License,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
+
 
  //endogenous variables
-var varrho r q G W C Y I S V M U Z K N P theta y_dev u_dev v_dev;
+var varrho r q G W C Y I S V M U Z K N p theta y_dev u_dev v_dev;
 
  //predetermined variables
 predetermined_variables K N;
@@ -29,7 +58,10 @@ beta= 1/(1.04^(1/4));  % discount factor
 nu_est=-1.25;  % Frisch elasticity
 sig_e=0.007;  % standard devaition of shock
 
+
+
  //model equations
+ 
 model;
  //----------- Household -----------------------------------
 
@@ -39,83 +71,84 @@ exp(varrho) = (1/exp(C));
 
  // 2. Marginal Disutility from Work
 [G]
-//exp(G)=(exp(N)^(1-1/nu_est))/(1-1/nu_est);
-
 exp(G)=(exp(N)^(1/nu_est));
+
  // 3. Consumption Euler equation
 [C]
     exp(varrho)=beta*(exp(varrho(+1))*(exp(r(+1))+1-delta_prime));
 
  // 4. Search intensity Euler equation
 [S]
-    //exp(varrho)*cs=exp(P)*beta*(exp(varrho(+1))*(exp(W(+1))+cs)-exp(G(+1))+(cs*exp(varrho(+1)-P(+1)))*(1+psi-exp(P(+1)+S(+1))));
-    exp(varrho)*cs=exp(P)*beta*(exp(varrho(+1))*(exp(W(+1))+cs)-exp(G(+1))+(exp(varrho(+1))*cs/exp(P(+1)))*(1+psi-exp(P(+1))*exp(S(+1))));
+    exp(varrho)*cs=exp(p)*beta*(exp(varrho(+1))*(exp(W(+1))+cs)-exp(G(+1))+(exp(varrho(+1))*cs/exp(p(+1)))*(1+psi-exp(p(+1))*exp(S(+1))));
 	 
  //------------- Firm --------------------------------------
 
 // 5. Production function
 [Y]
     exp(Y)=exp(Z)*exp(K)^alpha*(exp(N))^(1-alpha);
+    
  // 6. Interest rate
 [r]
     exp(r)=alpha*exp(Y)/exp(K);
+    
  // 7. Vacancy creation Euler equation [cv - vacancy posting costs]
 [V]
     exp(varrho)*cv=exp(q)*beta*exp(varrho(+1))*((1-alpha)*exp(Y(+1))/exp(N(+1))-exp(W(+1))+(cv/exp(q(+1)))*(1-psi));
+    
  // 8. Wage
 [W]
     exp(W) = lambda*((1-alpha)*exp(Y)/exp(N)+cv*exp(V)/exp(U))+(1-lambda)*((exp(N)^(-1/nu_est))/exp(varrho)-cs);
+    
  // --------Equlibrium market clearing ----------------------
+ 
 // 9. Aggregate Reource constraint
 [I]
     exp(Y)=exp(C)+exp(I)+cs*exp(S)^etas*exp(U)+cv*exp(V)^etav;
- //----------Declarations------------------------------------
+    
+ //----------Simplifictions------------------------------------
+ 
  // 10. Unemployment
 [U]
     exp(U)=1-exp(N);
+    
  // 11. Matching function
 [M]
     exp(M)=exp(V)^(1-lambda)*(exp(S+U))^lambda;
+    
  // 12. Kapital dynamics
 [K]
     exp(K(+1))=(1-delta_prime)*exp(K)+exp(I);
+    
  // 13. Labor dynamics
 [N]
     exp(N(+1))=(1-psi)*exp(N)+exp(M);
 
  // 14. Probability to find job
 [P]
-    //exp(P)=exp(theta)^(1-lambda);
+    //exp(p)=exp(theta)^(1-lambda);
     
-    exp(P)=exp(M-S-U)/0.2;
+    exp(p)=exp(M-S-U);
     
  // 15. Job match probability
 [q]
     exp(q)=(1-lambda)*exp(M-V);
+    
  // 16. Labor augmenting factor
 [Z]
     Z=rho*Z(-1)+e_Z;
         
- //--------- Cental Planner - [commented out] --------------
-//MC of searching = MB from working
-//    (cv*etav*exp(V)^(etav-1)/(exp(C)*(1-lambda)*exp(M-V)))=beta*((1/exp(C(+1)))*((1-alpha)*exp(Y(+1)-N(+1))+cs*exp(S(+1))^etas)-exp(N(+1))^(1/nu_est)+(cv*etav*exp(V(+1))^(etav-1)/(exp(C(+1))*(1-lambda)*exp(M(+1)-V(+1))))*(1-psi-lambda*exp(M(+1))/exp(U(+1))));
- //MC of searching = MC of posting vacancies
-//    (cs*etas*exp(S)^(etas)*exp(U)/((lambda)))=(cv*etav*exp(V)^(etav)/((1-lambda)));
- //Labor market tightness 
-    exp(theta)=exp(V-U);
- //Budget constraint
-//    exp(C)=exp(Y)-exp(I)-cs*exp(S)^etas*exp(U)-cv*exp(V)^etav;
 
- // 16. Output deviation from St.St.
+ // 17. Output deviation from St.St.
 [y_dev]
     y_dev = Y-STEADY_STATE(Y) ;
- // 17. Unmployment deviation from St.St.
+ // 18. Unmployment deviation from St.St.
 [u_dev]
     u_dev = U-STEADY_STATE(U) ;
- //18. Vacancy deviation from St.St.
+ //19. Vacancy deviation from St.St.
 [v_dev]
     v_dev = V-STEADY_STATE(V) ;
 end;
+
  //initial values for parameters
 initval;
 
@@ -134,7 +167,7 @@ initval;
     K=3.52231558659806;
     N=-0.0860303421462215;
     //P=1.29900453434794;
-    P=-0.2495;
+    p=-0.2495;
     q=-0.3445;
     theta=-0.415882101931087;
     y_dev=0;
@@ -142,7 +175,7 @@ initval;
     v_dev=0;
 end;
 
- check;
+check;
 
  //calculate steady state
 steady;
@@ -151,24 +184,5 @@ steady;
 shocks;
 var e_Z=sig_e^2;
 end;
-
- //observed model variables (names must coincide with data variables in datafile)
-//varobs y_dev u_dev v_dev; 
- //specify parameter to be estimated, including their priors
-//estimated_params;
-//lambda, 0.75,0.01,0.99, beta_pdf, 0.5, 0.1;
-//psi, 0.0765, 0.001,1, beta_pdf, 0.07, 0.05;
-//nu_est, 1.25, 0.001, 10, gamma_pdf, 1.25, 0.2;
-//stderr u_dev, 0.25*0.115881787006766, gamma_pdf,0.25*0.115881787006766,0.01;
-//stderr v_dev, 0.25*0.136135889718564, gamma_pdf,0.25*0.136135889718564,0.01;
-//stderr e_Z, 0.007, 0, 0.5,inv_gamma_pdf,0.01, 0.5;
-//rho,0.9534, 0.0001,.999, beta_pdf, 0.95, 0.005;
-//end;
-
- //estimate model
-
-//estimation(mode_compute=1,lik_init=2,order=1,plot_priors=1,datafile=data_dev,mh_replic=10000,mh_nblocks=2,mh_drop=0.2,mh_jscale=1,mode_check); 
-
- //stochastic simulation using the estimated parameters
 
 stoch_simul(irf=120,order=1,hp_filter=1600, periods=2100);
