@@ -97,7 +97,7 @@ exp(G)=(exp(N)^(1/nu_est));
     
  // 8. Wage
 [W]
-    exp(W) = lambda*((1-alpha)*exp(Y)/exp(N)+cv*exp(V)/exp(U))+(1-lambda)*((exp(N)^(-1/nu_est))/exp(varrho)-cs);
+    exp(W) = lambda*((1-alpha)*exp(Y)/exp(N)+cv*exp(V)/exp(U))+(1-lambda)*(0.8*exp(G-varrho)-cs);
     
  // --------Equlibrium market clearing ----------------------
  
